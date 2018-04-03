@@ -1,0 +1,118 @@
+eureka:
+    client:
+        enabled: true
+        healthcheck:
+            enabled: true
+        fetch-registry: true
+        register-with-eureka: true
+        instance-info-replication-interval-seconds: 10
+        registry-fetch-interval-seconds: 10
+        service-url:
+            defaultZone: http://admin:admin@192.168.50.50:8661/eureka/  #aggregation-registry
+    instance:
+        appname: ${spring.application.name}
+        instanceId: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+        status-page-url-path: ${management.context-path}/info
+        health-check-url-path: ${management.context-path}/health
+        metadata-map:
+            zone: primary # This is needed for the load balancer
+            profile: ${spring.profiles.active}
+            version: ${info.project.version}
+        prefer-ip-address: true
+spring:
+    application:
+        name: game-aggregation-service
+    profiles:
+        active: dev
+        include: swagger
+    jackson:
+        serialization.indent_output: true
+    devtools:
+        restart:
+            enabled: false
+        livereload:
+            enabled: false
+    data:
+        mongodb:
+            host: 192.168.50.50
+            port: 27017
+            database: test    
+    cloud:
+        stream:
+            kafka:
+                binder:
+                    brokers: 192.168.50.50:9092
+                    zk-nodes: 192.168.50.50:2181
+                    auto-add-partitions: true
+                    auto-create-topics: true
+                    min-partition-count: 2 
+            bindings:
+                output_game_download:
+                    destination: aggregation_download_dev
+                input_game:
+                    destination: aggregation-game
+                input_game_download_ok:  
+                    destination: entertainment_aggregation_download_finish_dev
+                    group: gameservice
+                output_game_index:  
+                    destination: solr-index-topic
+                input_game_redo:
+                    destination: redo-topic
+
+# ===================================================================
+# To enable SSL, generate a certificate using:
+# keytool -genkey -alias aggregationGateway -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
+#
+# You can also use Let's Encrypt:
+# https://maximilian-boehm.com/hp2121/Create-a-Java-Keystore-JKS-from-Let-s-Encrypt-Certificates.htm
+#
+# Then, modify the server.ssl properties so your "server" configuration looks like:
+#
+# server:
+#    port: 443
+#    ssl:
+#        key-store: keystore.p12
+#        key-store-password: <your-password>
+#        key-store-type: PKCS12
+#        key-alias: aggregationGateway
+# ===================================================================
+server:
+    port: 8888
+
+security:
+    basic:
+        enable: false
+        ignored: /**
+    user:
+        name: admin
+        password: 123456
+        
+callback:
+    game:
+        name: aggregation-gateway
+        limittimes: 2
+#     url: http://localhost:2222/game/callback
+
+secret:
+    encryptKey: 123456
+
+environment:
+    production: false
+
+fileConfig:
+    downloadBasePath: /opt/gfsmnt/
+
+# See https://github.com/Netflix/Hystrix/wiki/Configuration
+hystrix:
+    command:
+        default:
+            execution:
+                isolation:
+                    thread:
+                        timeoutInMilliseconds: 10000
+management:
+    security:
+        enabled: true
+        role: ADMIN

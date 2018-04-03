@@ -1,0 +1,186 @@
+logging:
+    level:
+        ROOT: DEBUG
+        com.migu.cmam: DEBUG
+        io.github.jhipster: DEBUG
+configserver:
+    name: Docker JHipster Registry
+    status: Connected to the JHipster Registry running in Docker
+eureka:
+    client:
+        enabled: true
+        healthcheck:
+            enabled: true
+        fetch-registry: true
+        register-with-eureka: true
+        instance-info-replication-interval-seconds: 10
+        registry-fetch-interval-seconds: 10
+        service-url:
+            defaultZone: http://admin:${jhipster.registry.password}@localhost:8761/eureka/
+    instance:
+        appname: ${spring.application.name}
+        instanceId: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+        status-page-url-path: ${management.context-path}/info
+        health-check-url-path: ${management.context-path}/health
+        metadata-map:
+            zone: primary # This is needed for the load balancer
+            profile: ${spring.profiles.active}
+            version: ${info.project.version}
+        prefer-ip-address: true
+ribbon:
+    eureka:
+        enabled: true
+feign:
+    hystrix:
+        enabled: true
+
+hystrix:
+    share-security-context: true
+
+management:
+    security:
+        roles: ADMIN
+    context-path: /management
+    health:
+        mail:
+            enabled: false # When using the MailService, configure an SMTP server and set this to true
+spring:
+    application:
+        name: publish-management-service
+    profiles:
+        active: dev
+        include: swagger
+    devtools:
+        restart:
+            enabled: true
+        livereload:
+            enabled: false # we use gulp + BrowserSync for livereload
+    jackson:
+        serialization.write_dates_as_timestamps: false
+        serialization.indent_output: true
+    messages:
+        basename: i18n/messages
+        cache-seconds: 1
+    mail:
+        host: localhost
+        port: 25
+        username:
+        password:
+    mvc:
+        favicon:
+            enabled: false
+    thymeleaf:
+        mode: XHTML
+        cache: false
+    data:
+        mongodb:
+            uri: 192.168.1.4
+            port: 27017
+            database: cmamVideo
+            authenticationDatabase: admin
+            username: test
+            password: test
+    zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
+        base-url: http://localhost:9411
+        enabled: false
+        locator:
+            discovery:
+                enabled: true
+security:
+    basic:
+        enabled: false
+    oauth2:
+        resource:
+            filter-order: 3
+
+server:
+    port: 8183
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+    session:
+        cookie:
+            http-only: true
+
+info:
+    project:
+        version: #project.version#
+jhipster:
+    http:
+        version: V_1_1
+        cache: # Used by the CachingHttpHeadersFilter
+            timeToLiveInDays: 1461
+    async:
+        core-pool-size: 2
+        max-pool-size: 50
+        queue-capacity: 10000
+    security:
+        client-authorization:
+            access-token-uri: http://managementuaa/oauth/token
+            token-service-id: managementuaa
+            client-id: internal
+            client-secret: internal
+    mail:
+        from: publishManagementService@localhost
+        base-url: http://127.0.0.1:8081
+    swagger:
+        default-include-pattern: /api/.*
+        title: publishManagementService API
+        description: publishManagementService API documentation
+        version: 0.0.1
+        terms-of-service-url:
+        contact-name:
+        contact-url:
+        contact-email:
+        license:
+        license-url:
+    ribbon:
+        display-on-active-profiles: dev
+    metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
+        jmx.enabled: true
+        graphite: # Use the "graphite" Maven profile to have the Graphite dependencies
+            enabled: false
+            host: localhost
+            port: 2003
+            prefix: publishManagementService
+        prometheus: # Use the "prometheus" Maven profile to have the Prometheus dependencies
+            enabled: false
+            endpoint: /prometheusMetrics
+        logs: # Reports Dropwizard metrics in the logs
+            enabled: false
+            report-frequency: 60 # in seconds
+    logging:
+        logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+            enabled: false
+            host: localhost
+            port: 5000
+            queue-size: 512
+        spectator-metrics: # Reports Spectator Circuit Breaker metrics in the logs
+            enabled: false
+oauth2:
+    signature-verification:
+        public-key-endpoint-uri: http://managementuaa/oauth/token_key
+        #ttl for public keys to verify JWT tokens (in ms)
+        ttl: 3600000
+        #max. rate at which public keys will be fetched (in ms)
+        public-key-refresh-rate-limit: 10000
+    web-client-configuration:
+        #keep in sync with UAA configuration
+        client-id: web_app
+        secret: changeit
+rbacSecurity:
+        ignore-url:
+            - /api/profile-info
+            - /management/health
+            - /management/**
+            - /v2/api-docs/**
+            - /swagger-resources/configuration/ui
+            - /swagger-ui/index.html
+            - /oauth/token_key
+            - /oauth/token
+        base-url: http://managementuaa
+        appName: publish-management-service
+application:

@@ -88,9 +88,9 @@ spring:
             enabled: false
     data:
         mongodb:
-            host: localhost
-            port: 27017
-            database: test
+             host: localhost
+             port: 27017
+             database: test
     mail:
         host: localhost
         port: 25

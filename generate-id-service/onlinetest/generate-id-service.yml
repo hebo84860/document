@@ -88,12 +88,9 @@ spring:
             enabled: false
     data:
         mongodb:
-            host: 10.176.1.67
+            host: localhost
             port: 27017
-            database: cmam
-            authenticationDatabase: admin
-            username: test
-            password: test
+            database: test
     mail:
         host: localhost
         port: 25
